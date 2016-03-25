@@ -11,6 +11,7 @@ Table adherent:
 - Adresse
 - Telephone
 - Date de Naissance
+- Categorie
 - Email
 - Type Adhesion
 - Numero Licence
@@ -19,14 +20,28 @@ Table adherent:
 - Date Maj
 - Photo
 - Affichage dans trombi ?
+- Mot de passe webapp
+- Permissions
 
 
-Table Adhesion:
+Table Categorie (senior, v1, v2 etc)
+- #
+- Libellé
+- Age min
+- Age max
+
+
+Table Permission:  (User, Admin, Owner)
+- #
+- Libellé
+
+
+Table Adhesion: (Loisir, Compétition, etc)
 - #
 - Libellé
 
 
 Table Ville:
 - # 
-- Nom
+- Libellé
 - Code Postal

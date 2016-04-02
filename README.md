@@ -15,7 +15,7 @@ Table adherent:
 - Email
 - Type Adhesion
 - Numero Licence
-- Date certificat 
+- Date certificat
 - Paiement
 - Date Maj
 - Photo
@@ -31,17 +31,13 @@ Table Categorie (senior, v1, v2 etc)
 - Age max
 
 
-Table Permission:  (User, Admin, Owner)
-- #
-- Libellé
-
-
 Table Adhesion: (Loisir, Compétition, etc)
 - #
 - Libellé
+- Prix
 
 
 Table Ville:
-- # 
+- #
 - Libellé
 - Code Postal

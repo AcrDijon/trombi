@@ -40,6 +40,34 @@ def init(sqluri='sqlite:////tmp/acr.db', fill=True):
     session = Session()
 
     #
+    # Categories
+    #
+    existing_hash = get_hash(session, u"category")
+    cats = os.path.join(os.path.dirname(__file__), 'data',
+                        'categories.csv')
+    with open(cats) as f:
+        file_hash = hashlib.md5(f.read()).hexdigest()
+
+    if file_hash != existing_hash:
+        done = []
+
+        with open(cats, 'rb') as f:
+            reader = csv.reader(f, delimiter=';')
+            for index, row in enumerate(reader):
+                if index == 0:
+                    continue
+                cat = mappings.Category()
+                cat.code = unicode(row[0], 'utf8')
+                cat.label = unicode(row[1], 'utf8')
+                cat.min_age = int(row[2])
+                cat.max_age = int(row[3])
+                session.add(cat)
+
+        session.commit()
+        set_hash(session, u"category", file_hash)
+
+
+    #
     # Cities
     #
     existing_hash = get_hash(session, u"city")
@@ -99,7 +127,7 @@ def init(sqluri='sqlite:////tmp/acr.db', fill=True):
                 member.birthday = datetime.datetime.strptime(row[7],
                                                              '%m/%d/%y')
 
-                #cat
+                member.category = row[8]
                 #email
                 #type lice
                 #numlic

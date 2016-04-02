@@ -35,7 +35,7 @@ class City(Base):
 class Category(Base):
     __tablename__ = 'category'
 
-    id = Column(Integer, primary_key=True)
+    code = Column(String(2), primary_key=True)
     label = Column(Unicode(128))
     min_age = Column(Integer)
     max_age = Column(Integer)
@@ -54,7 +54,7 @@ class Member(Base):
 
     id = Column(Integer, primary_key=True)
     membership = Column(Integer, ForeignKey('membership.id'))
-    category = Column(Integer, ForeignKey('category.id'))
+    category = Column(Integer, ForeignKey('category.code'))
     permissions = Column(Enum("User", "Admin", "Owner"))
     picture = Column(Unicode(128))
     lastname = Column(Unicode(128))

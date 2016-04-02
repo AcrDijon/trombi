@@ -1,0 +1,15 @@
+Code;Label;MinAge;MaxAge
+BB;Baby Athlé;0;6
+EA;Ecole d'Athlétisme;7;9
+PO;Poussin;10;11
+BE;Benjamin;12;13
+MI;Minime;14;15
+CA;Cadet;16;17
+JU;Junior;18;19
+ES;Espoir;20;22
+SE;Senior;23;39
+V1;Master 1;40;49
+V2;Master 2;50;59
+V3;Master 3;60;69
+V4;Master 4;70;79
+V5;Master 5;80;99

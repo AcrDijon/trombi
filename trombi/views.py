@@ -4,11 +4,14 @@ from trombi import forms
 
 
 @route('/')
-def listing(db):
+def index(db):
+    return 'index'
+
+
+@route('/member')
+def members(db):
     members = db.query(Member)
-    tmp = '<li><a href="/member/%s">%s</a></li>'
-    result = "".join([tmp % (member.id, member.lastname) for member in members])
-    return "<ul>%s</ul>" % (result)
+    return app.template("members", members=members)
 
 
 @route('/member/:id')

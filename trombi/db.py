@@ -1,15 +1,19 @@
+# encoding: utf8
 import datetime
 import csv
 import os
 import hashlib
+import locale
 
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from trombi import mappings
 
 
-Session = sessionmaker()
+DATADIR = os.path.join(os.path.dirname(__file__), 'data')
+Session = sessionmaker(autoflush=False)
 
+locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
 
 def get_hash(session, name):
     res = session.query(mappings.Hash).filter_by(name=name).first()
@@ -29,6 +33,25 @@ def set_hash(session, name, value):
     session.commit()
 
 
+def cvs2table(session, name, callback, delimiter=';'):
+    existing_hash = get_hash(session, name)
+    csvfile = os.path.join(DATADIR, u'%s.csv' % name)
+
+    with open(csvfile) as f:
+        file_hash = hashlib.md5(f.read()).hexdigest()
+
+    if file_hash != existing_hash:
+        with open(csvfile, 'rb') as f:
+            reader = csv.reader(f, delimiter=delimiter)
+            for index, row in enumerate(reader):
+                obj = callback(index, row)
+                if obj is not None:
+                    session.add(obj)
+
+        session.commit()
+        set_hash(session, name, file_hash)
+
+
 def init(sqluri='sqlite:////tmp/acr.db', fill=True):
     engine = create_engine(sqluri)
     Session.configure(bind=engine)
@@ -39,105 +62,129 @@ def init(sqluri='sqlite:////tmp/acr.db', fill=True):
 
     session = Session()
 
-    #
+    # Membership
+    def _create_membership(index, row):
+        if index == 0:
+            return
+        membership = mappings.Membership()
+        membership.label = unicode(row[0], 'utf8')
+        membership.price = int(row[1])
+        return membership
+
+    cvs2table(session, u"membership", _create_membership)
+
     # Categories
-    #
-    existing_hash = get_hash(session, u"category")
-    cats = os.path.join(os.path.dirname(__file__), 'data',
-                        'categories.csv')
-    with open(cats) as f:
-        file_hash = hashlib.md5(f.read()).hexdigest()
+    def _create_cat(index, row):
+        if index == 0:
+            return
+        cat = mappings.Category()
+        cat.code = unicode(row[0], 'utf8')
+        cat.label = unicode(row[1], 'utf8')
+        cat.min_age = int(row[2])
+        cat.max_age = int(row[3])
+        return cat
 
-    if file_hash != existing_hash:
-        done = []
+    cvs2table(session, u"categories", _create_cat)
 
-        with open(cats, 'rb') as f:
-            reader = csv.reader(f, delimiter=';')
-            for index, row in enumerate(reader):
-                if index == 0:
-                    continue
-                cat = mappings.Category()
-                cat.code = unicode(row[0], 'utf8')
-                cat.label = unicode(row[1], 'utf8')
-                cat.min_age = int(row[2])
-                cat.max_age = int(row[3])
-                session.add(cat)
-
-        session.commit()
-        set_hash(session, u"category", file_hash)
-
-
-    #
     # Cities
-    #
-    existing_hash = get_hash(session, u"city")
-    cities = os.path.join(os.path.dirname(__file__), 'data',
-                          'communes.csv')
-    with open(cities) as f:
-        file_hash = hashlib.md5(f.read()).hexdigest()
+    done = []
 
-    if file_hash != existing_hash:
-        done = []
+    def _create_city(index, row):
+        if index == 0:
+            return
+        label = unicode(row[1], 'utf8')
+        zipcode = int(row[2])
+        if (label, zipcode) in done:
+            return
+        city = mappings.City(label, zipcode)
+        done.append((label, zipcode))
+        return city
 
-        with open(cities, 'rb') as f:
-            reader = csv.reader(f, delimiter='\t')
-            for index, row in enumerate(reader):
-                if index == 0:
-                    continue
-                label = unicode(row[1], 'utf8')
-                zipcode = int(row[2])
-                if (label, zipcode) in done:
-                    continue
-                city = mappings.City(label, zipcode)
-                session.add(city)
-                done.append((label, zipcode))
+    cvs2table(session, u"communes", _create_city, delimiter='\t')
 
-        session.commit()
-        set_hash(session, u"city", file_hash)
-
-    #
     # Members
-    #
-    existing_hash = get_hash(session, u"member")
-    members = os.path.join(os.path.dirname(__file__), 'data',
-                            'adherents.csv')
+    def _create_member(index, row):
+        if index in (0, 1):
+            return
 
-    with open(members) as f:
-        file_hash = hashlib.md5(f.read()).hexdigest()
+        row = [unicode(value, 'utf8').strip() for value in row]
+        if all(value == '' for value in row):
+            return
 
-    if file_hash != existing_hash:
+        member = mappings.Member()
+        member.permissions = "User"
+        member.lastname = row[1]
+        member.firstname = row[2]
+        member.address = row[3]
 
-        with open(members, 'rb') as f:
-            reader = csv.reader(f, delimiter=';')
-            for index, row in enumerate(reader):
-                if index in (0, 1):
-                    continue
-                row = [unicode(value, 'utf8') for value in row]
+        try:
+            zipcode = int(row[4])
+            label = row[5]
+            if u'SAINT ' in label:  # XXX bof
+                label = label.replace(u'SAINT', u'ST')
 
-                member = mappings.Member()
-                member.lastname = row[1]
-                member.firstname = row[2]
-                member.address = row[3]
-                member.city_code = int(row[4])
-                member.city_label = row[5]
-                try:
-                    member.phone = int(row[6].replace(' ', ''))
-                except ValueError:
-                    pass
-                member.birthday = datetime.datetime.strptime(row[7],
-                                                             '%m/%d/%y')
+            res = session.query(mappings.City).filter_by(zipcode=zipcode,
+                                                         label=label)
+            city = res.one()
+            if city:
+                member.city = city
 
-                member.category = row[8]
-                #email
-                #type lice
-                #numlic
-                #date cert
-                #pay
-                #date maj
+        except ValueError:
+            pass
 
-                session.add(member)
+        try:
+            member.phone = int(row[6].replace(' ', ''))
+        except ValueError:
+            pass
+        member.birthday = datetime.datetime.strptime(row[7],
+                                                     '%m/%d/%y')
+        if member.birthday.year > 2016:
 
+            member.birthday = datetime.datetime(member.birthday.year-100,
+                                                member.birthday.month,
+                                                member.birthday.day)
 
-        set_hash(session, u"member", file_hash)
+        member.category_code = row[8]
+        gender = row[9]
+        if gender in (u'H', u'M'):
+            gender = u'M'
 
+        member.gender = gender
+        member.email = row[10]
 
+        try:
+            price = float(row[14].replace(',', '.'))
+            res = session.query(mappings.Membership).filter_by(price=price).first()
+            if res:
+                member.membership_label = res.label
+            else:
+                raise ValueError()
+        except ValueError:
+            label = row[11].split('\n')[-1]
+            res = session.query(mappings.Membership).filter_by(label=label).first()
+            if res:
+                member.membership_label = label
+            else:
+                member.membership_label = u'Simple'
+        member.licence = row[12]
+        try:
+            cert = datetime.datetime.strptime(row[13], '%m/%d/%y')
+            member.medical_certificate_date = cert
+        except ValueError:
+            pass
+
+        last_upd = row[-1].encode('utf8').lower().split('-')
+
+        if last_upd[0] == 'fev':
+            last_upd[0] = 'fév'
+
+        if last_upd[0] == 'dec':
+            last_upd[0] = 'déc'
+
+        member.last_updated = datetime.datetime.strptime('-'.join(last_upd), '%b-%y')
+        member.is_published = member.has_paid = True    # XXX
+        member.picture = member.password = u''
+        return member
+
+    cvs2table(session, u"adherents", _create_member)
+    return engine, session

@@ -132,10 +132,7 @@ def init(sqluri='sqlite:////tmp/acr.db', fill=True):
         except ValueError:
             pass
 
-        try:
-            member.phone = int(row[6].replace(' ', ''))
-        except ValueError:
-            pass
+        member.phone = row[6].replace(' ', '')
         member.birthday = datetime.datetime.strptime(row[7],
                                                      '%m/%d/%y')
         if member.birthday.year > 2016:

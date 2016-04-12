@@ -1,6 +1,6 @@
 % rebase('base.tpl', title='Members' )
 
-<h1>Members</h1>
+<h1>List des membres</h1>
 
 <ul>
   %for member in members:

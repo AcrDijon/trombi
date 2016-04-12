@@ -5,7 +5,7 @@ from trombi import forms
 
 @route('/')
 def index(db):
-    return 'index'
+    return app.template("index")
 
 
 @route('/member')

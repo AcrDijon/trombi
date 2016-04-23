@@ -147,7 +147,7 @@ def init(sqluri='sqlite:////tmp/acr.db', fill=True):
             gender = u'M'
 
         member.gender = gender
-        member.email = row[10]
+        member.email = row[10].replace(',', '.')
 
         try:
             price = float(row[14].replace(',', '.'))

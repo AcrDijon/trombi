@@ -1,7 +1,7 @@
 from functools import partial
 import os
 import bottle
-from bottle import route, app, view, template
+from bottle import route, app as app_stack, view, template
 from bottle.ext.sqlalchemy import SQLAlchemyPlugin
 
 from trombi.db import init, Session
@@ -15,18 +15,22 @@ PICS = os.path.join(HERE, 'photos')
 RESOURCES = os.path.join(HERE, 'resources')
 
 
-
-def main():
+def make_app():
+    app = bottle.app()
     engine, session = init()
     bottle.install(SQLAlchemyPlugin(engine, Base.metadata, create=True,
                                 create_session=Session))
 
-    app.vars = {}
-    app.view = partial(view, **app.vars)
-    app.template = partial(template, **app.vars)
-    app.session = session
-
+    app_stack.vars = {}
+    app_stack.view = partial(view, **app_stack.vars)
+    app_stack.template = partial(template, **app_stack.vars)
+    app_stack.session = session
     from trombi import views
+    return app
+
+
+def main():
+    make_app()
     bottle.debug(True)
     bottle.run(reloader=True)
 

@@ -17,13 +17,11 @@
      Téléphone <strong>{{member.phone}}</strong>
    </div>
    <div>
-     Licence <strong>{{member.licence}}</strong>
-   </div>
-   <div>
      Catégorie <strong>{{member.category.label}}</strong>
    </div>
    <div>
-     Adresse <strong>{{member.address}} - {{member.city.label}} ({{member.city.zipcode}})</strong>
+     Biographie
+    <p>{{member.bio}}</p>
    </div>
 
   </div>

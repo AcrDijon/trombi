@@ -2,7 +2,8 @@ from sqlalchemy_utils import EmailType, PasswordType
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import (Column, Integer, Unicode, Enum, ForeignKey, Date,
-                        Boolean, ForeignKeyConstraint, String, Float)
+                        Boolean, ForeignKeyConstraint, String, Float,
+                        UnicodeText)
 from sqlalchemy.orm import column_property, relationship
 
 
@@ -87,6 +88,7 @@ class Member(Base):
     is_published = Column(Boolean)
     has_paid = Column(Boolean)
     last_updated = Column(Date)
+    bio = Column(UnicodeText)
 
 
 Member.__table__.sqlite_autoincrement = True

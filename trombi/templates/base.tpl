@@ -36,9 +36,7 @@
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li><a href="/member?letter=A">Liste des membres</a></li>
-            <li><a href="#">Types adhésion</a></li>
-            <li><a href="#">Catégories</a></li>
+            <li><a href="/member">Liste des membres</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>

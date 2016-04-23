@@ -1,7 +1,7 @@
 import os
 
-from bottle import static_file
-from bottle import route, app, request
+from bottle import static_file, redirect
+from bottle import route, app, request, post
 
 from trombi.mappings import Member
 from trombi import forms
@@ -15,9 +15,10 @@ def index(db):
 
 @route('/member')
 def members(db):
-    # XXX security
-    letter = request.query.get('letter', 'A')
-    members = db.query(Member).filter(Member.lastname.like(u'%s%%' % letter))
+    letter = request.query.get('letter')
+    members = db.query(Member)
+    if letter is not None:
+        members = members.filter(Member.lastname.like(u'%s%%' % letter))
     return app.template("members", members=members, letter=letter)
 
 
@@ -25,7 +26,12 @@ def members(db):
 def member_edit(id, db):
     member = db.query(Member).filter_by(id=id).one()
     form = forms.MemberForm(obj=member)
-    return app.template("member", form=form, member=member)
+    return app.template("member_edit", form=form, member=member)
+
+
+@post('/member/:id')
+def member_post(id, db):
+    redirect('/member/%s' % id)
 
 
 @route('/member/:id')
@@ -37,6 +43,7 @@ def member(id, db):
 @route("/resources/<filepath:path>")
 def serve_resource(filepath):
     return static_file(filepath, root=RESOURCES)
+
 
 @route("/pics/<filepath:path>")
 def serve_static(filepath):

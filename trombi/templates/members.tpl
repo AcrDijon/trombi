@@ -5,10 +5,15 @@
 <div id="letters">
 % for c in [chr(l) for l in range(65, 91)]:
   % if c == letter:
-    {{c}}
+    <span class="selected">{{c}}</span>
   % else:
     <a href="/member?letter={{c}}">{{c}}</a>
   % end
+% end
+%if not letter:
+<span class="selected">Liste complète</span>
+% else:
+<a href="/member">Liste complète</a>
 % end
 </div>
 

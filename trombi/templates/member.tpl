@@ -1,5 +1,6 @@
 
 <div class="page-header">
+  <a class="memberEdit" href="/member/{{member.id}}/edit">Modifier</a>
   <h1>{{member.firstname.capitalize()}} {{member.lastname.capitalize()}}</h1>
 </div>
 
@@ -18,11 +19,9 @@
    <div>
      Licence <strong>{{member.licence}}</strong>
    </div>
-   %if member.category:
    <div>
      Catégorie <strong>{{member.category.label}}</strong>
    </div>
-   %end
    <div>
      Adresse <strong>{{member.address}} - {{member.city.label}} ({{member.city.zipcode}})</strong>
    </div>

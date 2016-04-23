@@ -11,6 +11,8 @@ from trombi import forms
 HERE = os.path.dirname(__file__)
 TEMPLATES = os.path.join(HERE, 'templates')
 bottle.TEMPLATE_PATH.append(TEMPLATES)
+PICS = os.path.join(HERE, 'photos')
+RESOURCES = os.path.join(HERE, 'resources')
 
 
 

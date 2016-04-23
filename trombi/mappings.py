@@ -72,7 +72,6 @@ class Member(Base):
     category_code = Column(String(2), ForeignKey('category.code'))
     category = relationship(Category)
     permissions = Column(Enum("User", "Admin", "Owner"))
-    picture = Column(Unicode(128))
     lastname = Column(Unicode(128))
     firstname = Column(Unicode(128))
     password = Column(PasswordType(schemes=['pbkdf2_sha512']))

@@ -34,5 +34,27 @@
 
 
 </div>
+<script src="/resources/js/bootstrap-datepicker.js"></script>
+
+<script src="/resources/js/bootstrap-datepicker.fr.min.js" charset="UTF-8"></script>
+
+<script>
+ $('#birthday').datepicker({
+   format: "yyyy-mm-dd",
+   language: "fr"
+ });
+
+ $('#medical_certificate_date').datepicker({
+   format: "yyyy-mm-dd",
+   language: "fr"
+ });
+
+ $('#last_updated').datepicker({
+   format: "yyyy-mm-dd",
+   language: "fr"
+ });
+
+</script>
+
 
 % rebase('base.tpl', title='%s %s' % (member.firstname.capitalize(), member.lastname.capitalize()))

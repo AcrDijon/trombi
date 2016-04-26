@@ -115,5 +115,5 @@ class MemberForm(BaseForm):
 
     city = CityField('city')
 
-    field_order = ('is_published', 'bio', 'email', 'phone', 'address', 'city',
-                   '*')
+    field_order = ('is_published', 'bio', 'email', 'phone', 'phone2',
+                   'address', 'city', '*')

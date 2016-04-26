@@ -5,6 +5,8 @@ from wtforms.fields import FormField
 from wtforms.widgets import Input, HTMLString
 
 from trombi import mappings
+from trombi.db import Session
+from trombi.mappings import City
 
 
 def get_codes():
@@ -83,6 +85,21 @@ class CityInput(Input):
 class CityField(TextField):
     widget = CityInput()
 
+    def validate(self, form, extra_validators=()):
+        if isinstance(self.data, unicode):
+            db = Session()
+            city_data = self.data.split(u'(')
+            if len(city_data) == 2:
+                city = city_data[0].strip()
+                zipcode = city_data[1].strip()[:-1]
+                city = db.query(City).filter(City.zipcode==zipcode,
+                                             City.label==city).first()
+                if city:
+                    self.data = city
+                    return True
+            self.errors = ['Unkown city']
+            return False
+        return True
 
 
 class MemberForm(BaseForm):

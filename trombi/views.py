@@ -42,10 +42,10 @@ def member_post(id, db):
         filename = os.path.join(PICS, filename)
         photo.save(filename, overwrite=True)
 
+    post_data = request.POST.decode()
+    form = forms.MemberForm(post_data, obj=member)
 
-    form = forms.MemberForm(request.POST.decode(), obj=member)
-
-    if request.POST and form.validate():
+    if form.validate():
         form.populate_obj(member)
 
     return app.template("member_edit", form=form, member=member)
@@ -81,7 +81,9 @@ def autocomplete(db):
     suggestions = []
     for city in cities:
         city = {'label': city.label, 'zipcode': city.zipcode,
-                'value': '%s (%s)' % (city.label, city.zipcode)}
+                'value': '%s (%s)' % (city.label, city.zipcode),
+                'data': city.id}
+
         suggestions.append(city)
 
     response.content_type = 'application/json'

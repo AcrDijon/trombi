@@ -36,8 +36,12 @@ class City(Base):
             self.zipcode = zipcode
 
     def __eq__(self, other):
+        if other is None:
+            return False
         return self.label == other.label and self.zipcode == other.zipcode
 
+    def __str__(self):
+        return '%s (%s)' % (self.label, self.zipcode)
 
 
 class Category(Base):

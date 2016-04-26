@@ -1,9 +1,10 @@
 import os
+import json
 
-from bottle import static_file, redirect
-from bottle import route, app, request, post
+from bottle import static_file, redirect, request, response
+from bottle import route, app, request, post, get
 
-from trombi.mappings import Member
+from trombi.mappings import Member, City
 from trombi import forms
 from trombi.server import PICS, RESOURCES
 
@@ -31,7 +32,24 @@ def member_edit(id, db):
 
 @post('/member/:id')
 def member_post(id, db):
-    redirect('/member/%s' % id)
+    member = db.query(Member).filter_by(id=id).one()
+
+    if 'photo' in request.files:
+        # XXX conversion + security
+        photo = request.files['photo']
+        filename = '%s-%s.jpg' % (member.firstname.lower(),
+                                  member.lastname.lower())
+        filename = os.path.join(PICS, filename)
+        photo.save(filename, overwrite=True)
+
+
+    form = forms.MemberForm(request.POST.decode(), obj=member)
+
+    if request.POST and form.validate():
+        form.populate_obj(member)
+
+    return app.template("member_edit", form=form, member=member)
+
 
 
 @route('/member/:id')
@@ -50,3 +68,23 @@ def serve_static(filepath):
     if not os.path.exists(os.path.join(PICS, filepath)):
         filepath = 'empty.jpg'
     return static_file(filepath, root=PICS)
+
+
+@route('/autocomplete/city')
+def autocomplete(db):
+    query = request.query.get('query')
+    cities = db.query(City)
+    if query:
+        cities = cities.filter(City.label.like(u'%s%%' % query))
+
+    cities = cities.limit(10)
+    suggestions = []
+    for city in cities:
+        city = {'label': city.label, 'zipcode': city.zipcode,
+                'value': '%s (%s)' % (city.label, city.zipcode)}
+        suggestions.append(city)
+
+    response.content_type = 'application/json'
+    data = {'suggestions': suggestions}
+    return json.dumps(data)
+

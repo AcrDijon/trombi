@@ -11,7 +11,7 @@
  </div>
  <div class="col-xs-8">
    <div>
-     Email <a href="mailto:{{member.email}}"><strong>{{member.email}}</strong></a>
+     Couriel <a href="mailto:{{member.email}}"><strong>{{member.email}}</strong></a>
    </div>
    <div>
      Téléphone <strong>{{member.phone}}</strong>
@@ -19,11 +19,12 @@
    <div>
      Catégorie <strong>{{member.category.label}}</strong>
    </div>
+   % if member.bio:
    <div>
      Biographie
     <p>{{member.bio}}</p>
    </div>
-
+   % end
   </div>
 
 % rebase('base.tpl', title='%s %s' % (member.firstname.capitalize(), member.lastname.capitalize()))

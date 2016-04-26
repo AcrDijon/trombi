@@ -1,6 +1,8 @@
 from collections import OrderedDict
 from wtforms_alchemy import ModelForm, QuerySelectField
+from wtforms import TextField
 from wtforms.fields import FormField
+from wtforms.widgets import Input, HTMLString
 
 from trombi import mappings
 
@@ -64,6 +66,25 @@ class CityForm(BaseForm):
         model = mappings.City
 
 
+class CityInput(Input):
+    input_type = 'city'
+
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault('id', field.id)
+        kwargs.setdefault('type', self.input_type)
+
+        if 'value' not in kwargs:
+            kwargs['value'] = field._value()
+
+        params = self.html_params(name=field.name, **kwargs)
+        return HTMLString('<input %s/>' % params)
+
+
+class CityField(TextField):
+    widget = CityInput()
+
+
+
 class MemberForm(BaseForm):
     class Meta:
         model = mappings.Member
@@ -75,7 +96,7 @@ class MemberForm(BaseForm):
     membership = QuerySelectField('membership', query_factory=get_membership,
                                   get_label='label')
 
-    city = QuerySelectField('city', query_factory=get_city,
-                            get_label=get_city_label)
+    city = CityField('city')
 
-    field_order = ('is_published', 'bio', 'email', 'phone', 'address', 'city', '*')
+    field_order = ('is_published', 'bio', 'email', 'phone', 'address', 'city',
+                   '*')

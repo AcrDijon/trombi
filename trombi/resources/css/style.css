@@ -147,3 +147,11 @@ div.photoChanger {
   margin-top: 5px;
   width: 200px;
 }
+
+div.autocomplete-suggestions {
+    background-color: white;
+    padding: 4px;
+    padding-left: 10px;
+    border: 1px solid #ccc;
+}
+

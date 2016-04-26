@@ -1,19 +1,20 @@
 # encoding: utf8
-import datetime
+from datetime import datetime
 import csv
 import os
 import hashlib
 import locale
 
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy import create_engine
 from trombi import mappings
 
 
 DATADIR = os.path.join(os.path.dirname(__file__), 'data')
-Session = sessionmaker(autoflush=False)
-
+session_factory = sessionmaker(autoflush=False)
+Session = scoped_session(session_factory)
 locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
+
 
 def get_hash(session, name):
     res = session.query(mappings.Hash).filter_by(name=name).first()
@@ -54,7 +55,7 @@ def cvs2table(session, name, callback, delimiter=';'):
 
 def init(sqluri='sqlite:////tmp/acr.db', fill=True):
     engine = create_engine(sqluri)
-    Session.configure(bind=engine)
+    session_factory.configure(bind=engine)
     mappings.Base.metadata.create_all(engine)
 
     if not fill:
@@ -133,15 +134,18 @@ def init(sqluri='sqlite:////tmp/acr.db', fill=True):
             pass
 
         member.phone = row[6].replace(' ', '')
-        member.birthday = datetime.datetime.strptime(row[7],
-                                                     '%m/%d/%y')
+        member.birthday = datetime.strptime(row[7], '%m/%d/%y')
         if member.birthday.year > 2016:
 
-            member.birthday = datetime.datetime(member.birthday.year-100,
-                                                member.birthday.month,
-                                                member.birthday.day)
+            member.birthday = datetime(member.birthday.year-100,
+                                       member.birthday.month,
+                                       member.birthday.day)
 
-        member.category_code = row[8]
+        if row[8] == u'S':
+            member.category_code = u'SE'
+        else:
+            member.category_code = row[8]
+
         gender = row[9]
         if gender in (u'H', u'M'):
             gender = u'M'
@@ -165,7 +169,7 @@ def init(sqluri='sqlite:////tmp/acr.db', fill=True):
                 member.membership_label = u'Simple'
         member.licence = row[12]
         try:
-            cert = datetime.datetime.strptime(row[13], '%m/%d/%y')
+            cert = datetime.strptime(row[13], '%m/%d/%y')
             member.medical_certificate_date = cert
         except ValueError:
             pass
@@ -182,7 +186,7 @@ def init(sqluri='sqlite:////tmp/acr.db', fill=True):
             last_upd[0] = 'sept'
 
         try:
-            member.last_updated = datetime.datetime.strptime('-'.join(last_upd), '%b-%y')
+            member.last_updated = datetime.strptime('-'.join(last_upd), '%b-%y')
         except ValueError:
             pass
         member.is_published = member.has_paid = True    # XXX
@@ -190,4 +194,6 @@ def init(sqluri='sqlite:////tmp/acr.db', fill=True):
         return member
 
     cvs2table(session, u"adherents", _create_member)
-    return engine, session
+
+    session.close()
+    return engine

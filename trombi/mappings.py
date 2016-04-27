@@ -79,7 +79,7 @@ class Member(Base):
     permissions = Column(Enum("User", "Admin", "Owner"))
     lastname = Column(Unicode(128))
     firstname = Column(Unicode(128))
-    password = Column(PasswordType(schemes=['pbkdf2_sha512']))
+    password = Column(PasswordType(schemes=['sha256_crypt']))
     email = Column(EmailType)
     licence = Column(Unicode(128))
     gender = Column(Enum('M', 'F'))

@@ -5,6 +5,7 @@ import os
 import hashlib
 import locale
 
+from passlib.hash import sha256_crypt
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy import create_engine
 from trombi import mappings
@@ -190,7 +191,7 @@ def init(sqluri='sqlite:////tmp/acr.db', fill=True):
         except ValueError:
             pass
         member.is_published = member.has_paid = True    # XXX
-        member.password = u''
+        member.password = 'toto'    #sha256_crypt.encrypt('toto')
         return member
 
     cvs2table(session, u"adherents", _create_member)

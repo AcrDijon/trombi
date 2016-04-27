@@ -2,16 +2,25 @@ import os
 import json
 
 from bottle import static_file, redirect, request, response
-from bottle import route, app, request, post, get
+from bottle import route, app, request, post, get, auth_basic
 
+from passlib.hash import sha256_crypt
 from trombi.mappings import Member, City
 from trombi import forms
 from trombi.server import PICS, RESOURCES
+from trombi.db import Session
+
+
+def template(name, *args, **kw):
+    if 'user' not in kw and hasattr(request, 'user'):
+        kw['user'] = request.user
+
+    return app.template(name, *args, **kw)
 
 
 @route('/')
 def index(db):
-    return app.template("index")
+    return template("index")
 
 
 @route('/member')
@@ -20,14 +29,14 @@ def members(db):
     members = db.query(Member)
     if letter is not None:
         members = members.filter(Member.lastname.like(u'%s%%' % letter))
-    return app.template("members", members=members, letter=letter)
+    return template("members", members=members, letter=letter)
 
 
 @route('/member/:id/edit')
 def member_edit(id, db):
     member = db.query(Member).filter_by(id=id).one()
     form = forms.MemberForm(obj=member)
-    return app.template("member_edit", form=form, member=member)
+    return template("member_edit", form=form, member=member)
 
 
 @post('/member/:id')
@@ -48,14 +57,14 @@ def member_post(id, db):
     if form.validate():
         form.populate_obj(member)
 
-    return app.template("member_edit", form=form, member=member)
+    return template("member_edit", form=form, member=member)
 
 
 
 @route('/member/:id')
 def member(id, db):
     member = db.query(Member).filter_by(id=id).one()
-    return app.template("member", member=member)
+    return template("member", member=member)
 
 
 @route("/resources/<filepath:path>")

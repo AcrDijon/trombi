@@ -37,7 +37,7 @@
    <a href="/member/{{member.id}}" class="thumbnail">
    <img src="/pics/{{member.firstname.lower()}}-{{member.lastname.lower()}}.jpg"/>
   </a>
-   <span class="imagetext">{{member.firstname.capitalize()}} {{member.lastname.capitalize()}}</span>
+   <span class="imagetext label label-default">{{member.firstname.capitalize()}} {{member.lastname.capitalize()}}</span>
  </div>
  </div>
   % end

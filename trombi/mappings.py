@@ -96,6 +96,11 @@ class Member(Base):
     last_updated = Column(Date)
     bio = Column(UnicodeText)
 
+    @property
+    def is_super_user(self):
+        return (self.permissions == u'Admin' or
+                self.permissions == u'Owner')
+
 
 Member.__table__.sqlite_autoincrement = True
 

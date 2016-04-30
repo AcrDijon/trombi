@@ -36,8 +36,11 @@
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li><a href="/member">Liste des membres</a></li>
+            <li><a href="/member">Liste des Adhérents</a></li>
             <li><a href="/member/{{user.id}}">Ma fiche</a></li>
+            % if user.is_super_user:
+            <li><a href="/admin">Gestion</a></li>
+            % end
           </ul>
         </div><!--/.nav-collapse -->
       </div>

@@ -1,7 +1,8 @@
 from collections import OrderedDict
-from wtforms_alchemy import ModelForm, QuerySelectField
+from wtforms_alchemy import (ModelForm, QuerySelectField,
+                             DataRequired)
 from wtforms import TextField
-from wtforms.fields import FormField
+from wtforms.fields import FormField, PasswordField
 from wtforms.widgets import Input, HTMLString
 
 from trombi import mappings
@@ -49,6 +50,9 @@ class BaseForm(ModelForm):
             self._fields = OrderedDict(temp_fields)
 
         return super(BaseForm, self).__iter__()
+
+    def can_edit(self, member, field):
+        return False
 
 
 class CategoryForm(BaseForm):
@@ -105,7 +109,8 @@ class CityField(TextField):
 class MemberForm(BaseForm):
     class Meta:
         model = mappings.Member
-        include_primary_keys = True
+        include_primary_keys = False
+        exclude = ['password']
 
     category = QuerySelectField('category', query_factory=get_codes,
                                 get_label='label')
@@ -117,3 +122,17 @@ class MemberForm(BaseForm):
 
     field_order = ('is_published', 'bio', 'email', 'phone', 'phone2',
                    'address', 'city', '*')
+
+
+    user_can_change = ['is_published', 'bio', 'email', 'phone', 'phone2',
+                       'address', 'city']
+
+    def can_edit(self, member, field):
+        if member.is_super_user:
+            return True
+
+        if member.email != self.email.data:
+            return False
+
+        # that's my data !
+        return field.name in self.user_can_change

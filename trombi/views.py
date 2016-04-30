@@ -1,5 +1,9 @@
+# encoding: utf8
 import os
 import json
+
+#import PIL
+#from PIL import Image
 
 from bottle import static_file, redirect, request, response
 from bottle import route, app, request, post, get, auth_basic
@@ -23,6 +27,12 @@ def index(db):
     return template("index")
 
 
+@route('/admin')
+def admin(db):
+    return template("admin")
+
+
+
 @route('/member')
 def members(db):
     letter = request.query.get('letter')
@@ -41,17 +51,36 @@ def member_edit(id, db):
 
 @post('/member/:id')
 def member_post(id, db):
+    id = int(id)
+
     member = db.query(Member).filter_by(id=id).one()
+    if not request.user.is_super_user and member.id != id:
+        bottle.HTTPError(401, "Access denied")
 
     if 'photo' in request.files:
-        # XXX conversion + security
+        # security
         photo = request.files['photo']
         filename = '%s-%s.jpg' % (member.firstname.lower(),
                                   member.lastname.lower())
         filename = os.path.join(PICS, filename)
         photo.save(filename, overwrite=True)
 
+        # resizing if needed
+        #img = Image.open(filename)
+        #import pdb; pdb.set_trace()
+        #img = img.resize((200, 200),PIL.Image.ANTIALIAS)
+        #img.save(filename)
+
+
     post_data = request.POST.decode()
+    if 'password' in post_data and post_data['password'] == '':
+        del post_data['password']
+
+    if not request.user.is_super_user and member.id == id:
+        for field in list(post_data.keys()):
+            if field not in forms.MemberForm.user_can_change:
+                del post_data[field]
+
     form = forms.MemberForm(post_data, obj=member)
 
     if form.validate():
@@ -63,6 +92,7 @@ def member_post(id, db):
 
 @route('/member/:id')
 def member(id, db):
+    id = int(id)
     member = db.query(Member).filter_by(id=id).one()
     return template("member", member=member)
 

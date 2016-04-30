@@ -114,7 +114,13 @@ def init(sqluri='sqlite:////tmp/acr.db', fill=True):
             return
 
         member = mappings.Member()
-        member.permissions = "User"
+
+        member.email = row[10].replace(',', '.')
+        if member.email in (u'tarek@ziade.org',):
+            member.permissions = "Owner"
+        else:
+            member.permissions = "User"
+
         member.lastname = row[1]
         member.firstname = row[2]
         member.address = row[3]
@@ -152,7 +158,6 @@ def init(sqluri='sqlite:////tmp/acr.db', fill=True):
             gender = u'M'
 
         member.gender = gender
-        member.email = row[10].replace(',', '.')
 
         try:
             price = float(row[14].replace(',', '.'))
@@ -191,7 +196,7 @@ def init(sqluri='sqlite:////tmp/acr.db', fill=True):
         except ValueError:
             pass
         member.is_published = member.has_paid = True    # XXX
-        member.password = 'toto'    #sha256_crypt.encrypt('toto')
+        member.password = u'toto'
         return member
 
     cvs2table(session, u"adherents", _create_member)

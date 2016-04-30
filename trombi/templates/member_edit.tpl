@@ -9,7 +9,7 @@
       class="form-horizontal"
       role="form"
       method="POST"
-      action="/member/{{!form.id.object_data}}">
+      action="/member/{{member.id}}">
 
   <div class="form-group">
     <label for="photo" class="control-label col-sm-2">Photo</label>
@@ -19,32 +19,34 @@ src="/pics/{{member.firstname.lower()}}-{{member.lastname.lower()}}.jpg?q={{time
       <div class="photoChanger">
       <span class="btn btn-default btn-file">
          <span id="fileTitle">Changer la photo</span>
-         <input type="file" id="photo" name="photo"/>
+         <input type="file" id="photo" name="photo" accept=".jpeg,.jpg" />
       </span>
       </div>
     </div>
   </div>
 
  % for field in form:
-     % if field.errors:
-     <div class="form-group has-error">
-     % else:
-     <div class="form-group">
-     % end
-        % if field.type != 'HiddenField':
-            <label for="{{ field.id }}" class="control-label col-sm-2">
+     % if user.is_super_user or form.can_edit(member, field):
+       % if field.errors:
+       <div class="form-group has-error">
+       % else:
+       <div class="form-group">
+       % end
+       % if field.type != 'HiddenField':
+              <label for="{{ field.id }}" class="control-label col-sm-2">
                 {{_(field.label.text)}}
             </label>
-        % end
-        <div class="col-sm-10">
-        {{ !field(class_='form-control') }}
-        </div>
-        % if field.errors:
-            % for e in field.errors:
-                <p class="help-block">{{ e }}</p>
-            % end
-        % end
-    </div>
+       % end
+       <div class="col-sm-10">
+       {{ !field(class_='form-control') }}
+       </div>
+       % if field.errors:
+         % for e in field.errors:
+          <p class="help-block">{{ e }}</p>
+         % end
+       % end
+       </div>
+    % end
  % end
  <hr/>
  <button type="submit" class="btn btn-default">Submit</button>

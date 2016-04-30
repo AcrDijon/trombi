@@ -1,30 +1,51 @@
 
 <div class="page-header">
-  <a class="memberEdit" href="/member/{{member.id}}/edit">Modifier</a>
-  <h1>{{member.firstname.capitalize()}} {{member.lastname.capitalize()}}</h1>
+  <h1>{{member.firstname.capitalize()}} {{member.lastname.capitalize()}}
+  <small>{{member.category.label}}</small>
+  </h1>
 </div>
 
 <div class="row">
 
  <div class="col-xs-2">
-  <img src="/pics/{{member.firstname.lower()}}-{{member.lastname.lower()}}.jpg"/>
+  <a href="#" class="thumbnail">
+    <img src="/pics/{{member.firstname.lower()}}-{{member.lastname.lower()}}.jpg"/>
+  </a>
+  %if user.id == member.id  or user.is_super_user:
+  <a class="btn btn-default" role="button" 
+     href="/member/{{member.id}}/edit">Modifier les infos</a>
+  %end
+
+
  </div>
- <div class="col-xs-8">
+ <div class="col-xs-10" style="font-size: 150%">
+   % if member.bio:
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">Bio</h3>
+    </div>
+
+    <div class="panel-body">   
+    <p>{{member.bio}}</p>
+   </div>
+   </div>
+   % end
+   </div>
+   <div class="col-xs-10">
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <h3 class="panel-title">Contacter</h3>
+    </div>
+    <div class="panel-body">
    <div>
      Couriel <a href="mailto:{{member.email}}"><strong>{{member.email}}</strong></a>
    </div>
    <div>
      Téléphone <strong>{{member.phone}}</strong>
    </div>
-   <div>
-     Catégorie <strong>{{member.category.label}}</strong>
-   </div>
-   % if member.bio:
-   <div>
-     Biographie
-    <p>{{member.bio}}</p>
-   </div>
-   % end
-  </div>
+ </div>
+ </div>
+ </div>
+</div>
 
 % rebase('base.tpl', title='%s %s' % (member.firstname.capitalize(), member.lastname.capitalize()))

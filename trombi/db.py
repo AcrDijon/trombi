@@ -4,6 +4,7 @@ import csv
 import os
 import hashlib
 import locale
+import re
 
 from passlib.hash import sha256_crypt
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -15,6 +16,13 @@ DATADIR = os.path.join(os.path.dirname(__file__), 'data')
 session_factory = sessionmaker(autoflush=False)
 Session = scoped_session(session_factory)
 locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
+
+
+control_char_re = re.compile('[^A-Za-z0-9]', re.UNICODE)
+
+
+def remove_control_chars(s):
+    return control_char_re.sub('', s)
 
 
 def get_hash(session, name):
@@ -145,8 +153,6 @@ def init(sqluri='sqlite:////tmp/acr.db', fill=True):
             member.phone = phones[0].replace(' ', '')
             if len(phones) > 1:
                 member.phone2 = phones[1].replace(' ', '')
-            if len(phones) > 2:
-                import pdb; pdb.set_trace()
         else:
             member.phone = row[6].replace(' ', '')
 
@@ -182,7 +188,8 @@ def init(sqluri='sqlite:////tmp/acr.db', fill=True):
                 member.membership_label = label
             else:
                 member.membership_label = u'Simple'
-        member.licence = row[12]
+
+        member.licence = remove_control_chars(row[12])
         try:
             cert = datetime.strptime(row[13], '%m/%d/%y')
             member.medical_certificate_date = cert

@@ -3,7 +3,6 @@
   <h1>{{member.firstname.capitalize()}} {{member.lastname.capitalize()}}</h1>
 </div>
 
-<div class="row">
 
 <form enctype='multipart/form-data'
       class="form-horizontal"
@@ -53,7 +52,6 @@ src="/pics/{{member.firstname.lower()}}-{{member.lastname.lower()}}.jpg?q={{time
 </form>
 
 
-</div>
 <script src="/resources/js/bootstrap-datepicker.js"></script>
 <script src="/resources/js/jquery.autocomplete.js"></script>
 <script src="/resources/js/bootstrap-datepicker.fr.min.js" charset="UTF-8"></script>

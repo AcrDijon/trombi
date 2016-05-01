@@ -7,19 +7,13 @@
 
 <div class="row">
 
- <div class="col-xs-2">
+ <div class="col-xs-12 col-sm-3">
   <a href="#" class="thumbnail">
     <img src="/pics/{{member.firstname.lower()}}-{{member.lastname.lower()}}.jpg"/>
   </a>
-  %if user.id == member.id  or user.is_super_user:
-  <a class="btn btn-default" role="button"
-     href="/member/{{member.id}}/edit">Modifier les infos</a>
-  %end
-
-
  </div>
- <div class="col-xs-10" style="font-size: 150%">
    % if member.bio:
+ <div class="col-xs-12 col-sm-9" style="font-size: 150%">
   <div class="panel panel-default">
     <div class="panel-heading">
       <h3 class="panel-title">Bio</h3>
@@ -29,9 +23,9 @@
     <p>{{!member.bio}}</p>
    </div>
    </div>
-   % end
    </div>
-   <div class="col-xs-10">
+   % end
+   <div class="col-xs-12 col-sm-9">
   <div class="panel panel-default">
     <div class="panel-heading">
       <h3 class="panel-title">Contacter</h3>
@@ -51,6 +45,14 @@
  </div>
  </div>
  </div>
+
+<div class="col-xs-12 col-sm-9">
+  %if user.id == member.id  or user.is_super_user:
+  <a class="btn btn-default" role="button"
+     href="/member/{{member.id}}/edit">Modifier les infos</a>
+  %end
+</div>
+
 </div>
 
 % rebase('base.tpl', title='%s %s' % (member.firstname.capitalize(), member.lastname.capitalize()))

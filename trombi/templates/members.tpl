@@ -4,7 +4,6 @@
   <h1>Liste des Adhérents <small>par ordre alphabétique</small></h1>
 </div>
 
-<div class="container-fluid">
 
 <nav>
   <ul class="pagination">

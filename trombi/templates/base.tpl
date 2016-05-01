@@ -47,30 +47,24 @@
       </div>
     </nav>
 
-    <div class="container">
-        <div class="row">
-            <div class="span12">
-                <!--JS-START-->
-                <script src="/resources/js/jquery.min.js"></script>
-                <script src="/resources/js/bootstrap.min.js"></script>
-                <script src="/resources/js/bootstrap-datepicker.js"></script>
-                <script src="/resources/js/bootstrap-datepicker.fr.min.js" charset="UTF-8"></script>
-                <!--JS-END-->
-                <!-- CONTENT -->
-                <div class="row">
-                    <div class="span12" id="contentContainer">
-                        {{!base}}
-                    </div>
-                </div>
-                <!-- END-CONTENT -->
-            </div><!--/span-->
-        </div><!--/row-->
+    <!--JS-START-->
+    <script src="/resources/js/jquery.min.js"></script>
+    <script src="/resources/js/bootstrap.min.js"></script>
+    <script src="/resources/js/bootstrap-datepicker.js"></script>
+    <script src="/resources/js/bootstrap-datepicker.fr.min.js" charset="UTF-8"></script>
+    <!--JS-END-->
 
-        <hr>
+    <!-- CONTENT -->
+    <div id="contentContainer" class="container">
+    {{!base}}
 
-        <footer>
-            <p>&copy; Tarek Ziadé - 2016</p>
-        </footer>
-    </div><!--/.fluid-container-->
+    <hr>
+    <footer>
+      <p>&copy; Tarek Ziadé & ACR Dijon- 2016</p>
+    </footer>
+
+    </div>
+    <!-- END-CONTENT -->
+
 </body>
 </html>

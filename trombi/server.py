@@ -37,6 +37,7 @@ class AuthPlugin(object):
 
     def apply(self, callback, context):
         def wrapper(*args, **kwargs):
+
             auth = bottle.request.auth
             if auth is None:
                 return self._401()

@@ -12,7 +12,7 @@
     <img src="/pics/{{member.firstname.lower()}}-{{member.lastname.lower()}}.jpg"/>
   </a>
   %if user.id == member.id  or user.is_super_user:
-  <a class="btn btn-default" role="button" 
+  <a class="btn btn-default" role="button"
      href="/member/{{member.id}}/edit">Modifier les infos</a>
   %end
 
@@ -25,7 +25,7 @@
       <h3 class="panel-title">Bio</h3>
     </div>
 
-    <div class="panel-body">   
+    <div class="panel-body">
     <p>{{member.bio}}</p>
    </div>
    </div>
@@ -43,6 +43,11 @@
    <div>
      Téléphone <strong>{{member.phone}}</strong>
    </div>
+   % if member.phone2:
+   <div>
+     Téléphone #2 <strong>{{member.phone2}}</strong>
+   </div>
+   % end
  </div>
  </div>
  </div>

@@ -140,7 +140,16 @@ def init(sqluri='sqlite:////tmp/acr.db', fill=True):
         except ValueError:
             pass
 
-        member.phone = row[6].replace(' ', '')
+        if len(row[6]) > 14:
+            phones = row[6].split('\n')
+            member.phone = phones[0].replace(' ', '')
+            if len(phones) > 1:
+                member.phone2 = phones[1].replace(' ', '')
+            if len(phones) > 2:
+                import pdb; pdb.set_trace()
+        else:
+            member.phone = row[6].replace(' ', '')
+
         member.birthday = datetime.strptime(row[7], '%m/%d/%y')
         if member.birthday.year > 2016:
 

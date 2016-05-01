@@ -1,6 +1,8 @@
 # encoding: utf8
 import os
 import json
+import csv
+import StringIO
 
 #import PIL
 #from PIL import Image
@@ -31,6 +33,23 @@ def index(db):
 def admin(db):
     return template("admin")
 
+
+_HEADERS = ['lastname', 'firstname']
+
+
+@route('/export')
+def export(db):
+    members = db.query(Member).order_by(Member.lastname)
+    content = StringIO.StringIO()
+    writer = csv.writer(content, delimiter=',')
+    writer.writerow(_HEADERS)
+    for member in members:
+        writer.writerow([getattr(member, field).encode('utf8') for field in _HEADERS])
+
+    response.headers['Content-Disposition'] = 'inline; filename="adherents-acr.csv"'
+    response.content_type = 'text/csv'
+    content.seek(0)
+    return content.read()
 
 
 @route('/member')

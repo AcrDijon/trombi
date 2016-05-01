@@ -88,7 +88,6 @@ class Member(Base):
     city = relationship(City)
     phone = Column(String(10))
     phone2 = Column(String(10))
-    phone3 = Column(String(10))
     birthday = Column(Date)
     medical_certificate_date = Column(Date)
     is_published = Column(Boolean)

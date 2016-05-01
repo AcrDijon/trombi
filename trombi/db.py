@@ -124,7 +124,7 @@ def init(sqluri='sqlite:////tmp/acr.db', fill=True):
         member = mappings.Member()
 
         member.email = row[10].replace(',', '.')
-        if member.email in (u'tarek@ziade.org',):
+        if member.email in (u'tarek@ziade.org', u'varquiel@gmail.com'):
             member.permissions = "Owner"
         else:
             member.permissions = "User"

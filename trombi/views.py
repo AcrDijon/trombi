@@ -56,9 +56,20 @@ def export(db):
 def members(db):
     letter = request.query.get('letter')
     members = db.query(Member)
+    lastnames = members.distinct(Member.lastname)
+    letters = []
+
+    for member in lastnames:
+        first = member.lastname.upper()[0]
+        if first not in letters:
+            letters.append(first)
+
+    letters.sort()
+
     if letter is not None:
         members = members.filter(Member.lastname.like(u'%s%%' % letter))
-    return template("members", members=members, letter=letter)
+    return template("members", members=members, letter=letter,
+                    letters=letters)
 
 
 @route('/member/:id/edit')

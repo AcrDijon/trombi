@@ -7,7 +7,6 @@
 
 <nav>
   <ul class="pagination">
-
 %if not letter:
 <li class="active">
 % else:
@@ -15,7 +14,7 @@
 % end
 <a href="/member">Tous</a>
 </li>
-% for c in [chr(l) for l in range(65, 91)]:
+% for c in letters:
 % if c == letter:
     <li class="active">
 % else:
@@ -28,22 +27,20 @@
 
 
 <div class="grid">
-<div class="grid-sizer col-xs-3"></div>
- % for member in members:
- % if user.is_super_user or member.is_published:
- <div class="grid-item">
- <div class="grid-item-content">
-   <a href="/member/{{member.id}}" class="thumbnail">
-   <img src="/pics/{{member.firstname.lower()}}-{{member.lastname.lower()}}.jpg"/>
-  </a>
-   <span class="imagetext label label-default">{{member.firstname.capitalize()}} {{member.lastname.capitalize()}}</span>
- </div>
- </div>
+  % for member in members:
+    % if user.is_super_user or member.is_published:
+    <div class="grid-item">
+     <div class="grid-item-content">
+      <a href="/member/{{member.id}}" class="thumbnail">
+       <img src="/pics/{{member.firstname.lower()}}-{{member.lastname.lower()}}.jpg"/>
+      </a>
+      <span class="imagetext label label-default">{{member.firstname.capitalize()}} {{member.lastname.capitalize()}}</span>
+     </div>
+    </div>
+    % end
   % end
-% end
+</div>
 
-</div>
-</div>
 <script src="/resources/js/masonry.pkgd.min.js">></script>
 
 <script>

@@ -26,7 +26,7 @@
     </div>
 
     <div class="panel-body">
-    <p>{{member.bio}}</p>
+    <p>{{!member.bio}}</p>
    </div>
    </div>
    % end

@@ -87,7 +87,8 @@ def member_post(id, db):
 
     member = db.query(Member).filter_by(id=id).one()
     if not request.user.is_super_user and member.id != id:
-        bottle.HTTPError(401, "Access denied")
+        alert = u'Page non authorisée'
+        return redirect("/login?alert=%s" % alert.encode('base64'))
 
     if 'photo' in request.files:
         # security
@@ -116,6 +117,9 @@ def member_post(id, db):
     form = forms.MemberForm(post_data, obj=member)
 
     if form.validate():
+        for field in form:
+            if field.name not in post_data.keys():
+                del form[field.name]
         form.populate_obj(member)
 
     return template("member_edit", form=form, member=member)
@@ -125,12 +129,20 @@ def member_post(id, db):
 @route('/member/:id')
 def member(id, db):
     id = int(id)
-    member = db.query(Member).filter_by(id=id).one()
-    if (not member.is_published and
-        not request.user.is_super_user and request.user.id != id):
-        raise bottle.HTTPError(401, "Access denied")
 
-    return template("member", member=member)
+    if hasattr(request, 'user'):
+        my_page = request.user.id == id
+        super_user = request.user.is_super_user
+    else:
+        my_page = False
+        super_user = False
+
+    member = db.query(Member).filter_by(id=id).one()
+    if (my_page or super_user) or member.is_published:
+        return template("member", member=member)
+    else:
+        alert = u'Page non authorisée'
+        return redirect("/login?alert=%s" % alert.encode('base64'))
 
 
 @route("/resources/<filepath:path>")
@@ -205,7 +217,11 @@ def login():
         email = email.decode('base64')
         email = cgi.escape(email)
 
-    return template("login", email=email, alert=alert)
+    from_url = request.params.get('from_url')
+    if from_url:
+        from_url = cgi.escape(from_url.decode('base64'))
+
+    return template("login", email=email, alert=alert, from_url=from_url)
 
 
 @route('/reset')

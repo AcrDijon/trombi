@@ -12,6 +12,9 @@
       role="form"
       method="POST"
       action="/login">
+%if from_url:
+  <input type="hidden" name="from_url" value="{{from_url}}"/>
+% end
   <div class="form-group">
       <label for="email" class="control-label col-sm-2">Couriel</label>
       <div class="col-sm-10">

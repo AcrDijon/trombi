@@ -51,7 +51,7 @@ class AuthPlugin(object):
         if url.fragment:
             from_url += '#' + url.fragment
 
-        params['from'] = from_url.encode('base64').strip()
+        params['from_url'] = from_url.encode('base64').strip()
 
         if alert is not None:
             params['alert'] = alert.encode('base64').strip()
@@ -93,8 +93,6 @@ class AuthPlugin(object):
             if request.path == '/logout':
                 session['email'] = None
                 session.delete()
-                # how to clear out basic auth without popping window?
-                #
                 return redirect('/')
 
             # login in
@@ -104,10 +102,15 @@ class AuthPlugin(object):
                 member = self._get_member(email, password)
                 session['email'] = email
                 session.save()
-                return redirect('/')
+                from_url = request.POST.get('from_url', '/')
+                return redirect(from_url)
 
             # grab the connected user
             email = session.get('email', None)
+
+            if not email and not self._anonymous_ok():
+                # not connected, and needs it
+                return self._401("Cette page necessite une connexion")
 
             if email:
                 bottle.request.user = self._get_member(email)

@@ -48,7 +48,7 @@ src="/pics/{{member.firstname.lower()}}-{{member.lastname.lower()}}.jpg?q={{time
     % end
  % end
  <hr/>
- <button type="submit" class="btn btn-default">Submit</button>
+ <button type="submit" class="btn btn-default">Valider</button>
 </form>
 
 

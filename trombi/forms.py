@@ -1,7 +1,9 @@
+# encoding: utf8
 from collections import OrderedDict
 from wtforms_alchemy import (ModelForm, QuerySelectField,
                              DataRequired)
 from wtforms import TextField
+from wtforms.validators import EqualTo, Required
 from wtforms.fields import FormField, PasswordField
 from wtforms.widgets import Input, HTMLString
 
@@ -70,6 +72,13 @@ class MembershipForm(BaseForm):
 class CityForm(BaseForm):
     class Meta:
         model = mappings.City
+
+
+class ChangePassword(BaseForm):
+  password = PasswordField('Mot de passe',
+            [Required(), EqualTo('confirm',
+               message=u'Les mots de passe diffèrent')])
+  confirm  = PasswordField('Resaisir mot de passe')
 
 
 class CityInput(Input):

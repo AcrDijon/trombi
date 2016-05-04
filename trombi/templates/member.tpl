@@ -51,6 +51,10 @@
   <a class="btn btn-default" role="button"
      href="/member/{{member.id}}/edit">Modifier les infos</a>
   %end
+  % if user.id == member.id:
+  <a class="btn btn-default" role="button"
+     href="/change_password">Changer mon mot de passe</a>
+  % end
 </div>
 
 </div>

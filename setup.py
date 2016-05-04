@@ -3,7 +3,8 @@ from setuptools import setup, find_packages
 
 
 install_requires = ['SQLALchemy', 'bottle', 'bottle-sqlalchemy',
-                    'WTForms-Alchemy', 'passlib', 'Pillow']
+                    'WTForms-Alchemy', 'passlib', 'Pillow',
+                    'beaker']
 
 
 setup(name='acr-trombi',

@@ -3,10 +3,12 @@ import os
 import json
 import csv
 import StringIO
+import cgi
 
-#import PIL
-#from PIL import Image
+import PIL
+from PIL import Image
 
+import bottle
 from bottle import static_file, redirect, request, response
 from bottle import route, app, request, post, get, auth_basic
 
@@ -96,10 +98,10 @@ def member_post(id, db):
         photo.save(filename, overwrite=True)
 
         # resizing if needed
-        #img = Image.open(filename)
-        #import pdb; pdb.set_trace()
-        #img = img.resize((200, 200),PIL.Image.ANTIALIAS)
-        #img.save(filename)
+        img = Image.open(filename)
+        if img.width != 200 or img.height != 200:
+            img = img.resize((200, 200), PIL.Image.ANTIALIAS)
+            img.save(filename)
 
 
     post_data = request.POST.decode()
@@ -124,6 +126,10 @@ def member_post(id, db):
 def member(id, db):
     id = int(id)
     member = db.query(Member).filter_by(id=id).one()
+    if (not member.is_published and
+        not request.user.is_super_user and request.user.id != id):
+        raise bottle.HTTPError(401, "Access denied")
+
     return template("member", member=member)
 
 
@@ -159,3 +165,83 @@ def autocomplete(db):
     data = {'suggestions': suggestions}
     return json.dumps(data)
 
+
+@bottle.error(404)
+def error404(error):
+    return template("404")
+
+
+#
+# move to AuthPlugin
+#
+
+# XXX how can I ca get ridd of those... (AuthPlugin handles it)
+@post('/login')
+def post_login():
+    return
+
+
+@route('/logout')
+def logout():
+    pass
+
+@route('/login')
+def login():
+    alert = request.params.get('alert')
+    if alert:
+        alert = alert.decode('base64')
+        # avoid XSS attacks
+        alert = cgi.escape(alert)
+
+    email = request.params.get('email')
+    if email is None:
+        if hasattr(request, 'user'):
+            email = request.user.email
+        else:
+            session = request.environ['beaker.session']
+            email = session.get('email', '')
+    else:
+        email = email.decode('base64')
+        email = cgi.escape(email)
+
+    return template("login", email=email, alert=alert)
+
+
+@route('/reset')
+def reset():
+    email = request.params.get('email')
+    if email is None:
+        if hasattr(request, 'user'):
+            email = request.user.email
+        else:
+            session = request.environ['beaker.session']
+            email = session.get('email', '')
+    else:
+        email = email.decode('base64')
+        email = cgi.escape(email)
+
+    return template("reset_password", email=email)
+
+
+@post('/reset')
+def post_reset():
+    return
+
+
+@route('/change_password')
+def change_password():
+    form = forms.ChangePassword()
+    return template("change_password", form=form)
+
+
+@post('/change_password')
+def post_change_password():
+    post_data = request.POST.decode()
+    form = forms.ChangePassword(post_data)
+
+    if form.validate():
+        request.user.password = form.password.data
+        alert = 'Mot de passe modifié'
+        return redirect('/logout?alert=%s' % alert.encode('base64'))
+
+    return template("change_password", form=form)

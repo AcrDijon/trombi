@@ -37,12 +37,19 @@
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-            <li><a href="/member">Liste des Adhérents</a></li>
-            <li><a href="/member/{{user.id}}">Ma fiche</a></li>
-            % if user.is_super_user:
-            <li><a href="/admin">Gestion</a></li>
+            % if defined('user'):
+              <li><a href="/member">Liste des Adhérents</a></li>
+              <li><a href="/member/{{user.id}}">Ma fiche</a></li>
+              % if user.is_super_user:
+              <li><a href="/admin">Gestion</a></li>
+              % end
             % end
           </ul>
+          % if defined('user'):
+           <a class="navbar-btn btn btn-primary" href="/logout">Déconnexion</a>
+          % else:
+           <a class="navbar-btn btn btn-primary" href="/login">Connexion</a>
+          % end
         </div><!--/.nav-collapse -->
       </div>
     </nav>

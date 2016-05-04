@@ -141,7 +141,8 @@ def serve_resource(filepath):
 @route("/pics/<filepath:path>")
 def serve_static(filepath):
     if not os.path.exists(os.path.join(PICS, filepath)):
-        filepath = 'empty.jpg'
+        return redirect('/pics/empty.jpg')
+
     return static_file(filepath, root=PICS)
 
 

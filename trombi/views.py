@@ -15,13 +15,21 @@ from bottle import route, app, request, post, get, auth_basic
 from passlib.hash import sha256_crypt
 from trombi.mappings import Member, City
 from trombi import forms
-from trombi.server import PICS, RESOURCES
+from trombi.server import PICS, RESOURCES, raise_401
 from trombi.db import Session
 
 
 def template(name, *args, **kw):
     if 'user' not in kw and hasattr(request, 'user'):
         kw['user'] = request.user
+
+    alert = request.params.get('alert')
+    if alert:
+        alert = alert.decode('base64')
+        # avoid XSS attacks
+        alert = cgi.escape(alert)
+
+    kw['alert'] = alert
 
     return app.template(name, *args, **kw)
 
@@ -63,7 +71,7 @@ def members(db):
 
     for member in lastnames:
         first = member.lastname.upper()[0]
-        if first not in letters:
+        if first not in letters and member.is_published:
             letters.append(first)
 
     letters.sort()
@@ -200,64 +208,97 @@ def logout():
 
 @route('/login')
 def login():
-    alert = request.params.get('alert')
-    if alert:
-        alert = alert.decode('base64')
-        # avoid XSS attacks
-        alert = cgi.escape(alert)
 
-    email = request.params.get('email')
-    if email is None:
+    login = request.params.get('login')
+    if login is None:
         if hasattr(request, 'user'):
-            email = request.user.email
+            login = request.user.login
         else:
             session = request.environ['beaker.session']
-            email = session.get('email', '')
+            login = session.get('login', '')
     else:
-        email = email.decode('base64')
-        email = cgi.escape(email)
+        login = login.decode('base64')
+        login = cgi.escape(login)
 
     from_url = request.params.get('from_url')
     if from_url:
         from_url = cgi.escape(from_url.decode('base64'))
 
-    return template("login", email=email, alert=alert, from_url=from_url)
+    return template("login", login=login, from_url=from_url)
 
 
 @route('/reset')
 def reset():
-    email = request.params.get('email')
-    if email is None:
+    login = request.params.get('login')
+    if login is None:
         if hasattr(request, 'user'):
-            email = request.user.email
+            login = request.user.login
         else:
             session = request.environ['beaker.session']
-            email = session.get('email', '')
+            login = session.get('login', '')
     else:
-        email = email.decode('base64')
-        email = cgi.escape(email)
+        login = login.decode('base64')
+        login = cgi.escape(login)
 
-    return template("reset_password", email=email)
+    return template("reset_password", login=login)
 
 
 @post('/reset')
-def post_reset():
-    return
+def post_reset(db):
+    # we generate a unique token and send it by e-mail to the user
+    # of course, if the mail is intercepted or the server is not in HTTPS
+    # that's a security breach.
+    login = request.POST.get('login')
+    member = db.query(Member).filter_by(login=login).one()
+    member.send_reset_email()
+    alert = 'Vous allez reçevoir un e-mail.'
+    return redirect('/?alert=%s' % alert.encode('base64'))
+
+
+def _auth_by_token(db):
+    if not hasattr(request, 'user'):
+        token = request.GET.get('token')
+        if token is None:
+            token = request.POST.get('token')
+
+        login = request.GET.get('login')
+        if login is None:
+            login = request.POST.get('login')
+
+        if token is None or login is None:
+            return raise_401(alert='Accès interdit')
+
+        member = db.query(Member).filter_by(login=login).one()
+
+        if member.token != token:
+            return raise_401(alert=u'Mauvais token')
+
+        request.user = member
+    else:
+        login = request.user.login
+        token = request.user.token
+
+    return token, login
 
 
 @route('/change_password')
-def change_password():
+def change_password(db):
     form = forms.ChangePassword()
+    token, login = _auth_by_token(db)
+    form.token.data = token
+    form.login.data = login
     return template("change_password", form=form)
 
 
 @post('/change_password')
-def post_change_password():
+def post_change_password(db):
+    token, login = _auth_by_token(db)
     post_data = request.POST.decode()
     form = forms.ChangePassword(post_data)
 
     if form.validate():
         request.user.password = form.password.data
+        request.user.token = ''
         alert = 'Mot de passe modifié'
         return redirect('/logout?alert=%s' % alert.encode('base64'))
 

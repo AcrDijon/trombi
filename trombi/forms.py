@@ -4,7 +4,7 @@ from wtforms_alchemy import (ModelForm, QuerySelectField,
                              DataRequired)
 from wtforms import TextField
 from wtforms.validators import EqualTo, Required
-from wtforms.fields import FormField, PasswordField
+from wtforms.fields import FormField, PasswordField, HiddenField
 from wtforms.widgets import Input, HTMLString
 
 from trombi import mappings
@@ -75,6 +75,9 @@ class CityForm(BaseForm):
 
 
 class ChangePassword(BaseForm):
+  token = HiddenField('token')
+  login = HiddenField('login')
+
   password = PasswordField('Mot de passe',
             [Required(), EqualTo('confirm',
                message=u'Les mots de passe diffèrent')])

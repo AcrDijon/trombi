@@ -1,3 +1,4 @@
+# encoding: utf8
 from functools import partial
 import os
 import time
@@ -30,9 +31,32 @@ session_opts = {
 }
 
 
+def raise_401(alert=None, login=None):
+    url = request.urlparts
+    from_url = url.path
+    params = {}
+
+    if url.query:
+        from_url += '?' + url.query
+    if url.fragment:
+        from_url += '#' + url.fragment
+
+    params['from_url'] = from_url.encode('base64').strip()
+
+    if alert is not None:
+        params['alert'] = alert.encode('base64').strip()
+
+    if login is not None:
+        params['login'] = login.encode('base64').strip()
+
+    params = urlencode(params)
+    return redirect("/login?" + params)
+
+
 class AuthPlugin(object):
 
-    AUTHORIZED_PATH = ['/', '/login', '/logout']
+    AUTHORIZED_PATH = ['/', '/login', '/logout', '/reset',
+                       '/change_password']
     ASSETS = '/resources/'
 
     def __init__(self, app, engine, create_session):
@@ -41,30 +65,12 @@ class AuthPlugin(object):
         self.create_session = create_session
         self._cache = {}
 
-    def _401(self, alert=None, email=None):
-        url = request.urlparts
-        from_url = url.path
-        params = {}
+    def _401(self, alert=None, login=None):
+        return raise_401(alert, login)
 
-        if url.query:
-            from_url += '?' + url.query
-        if url.fragment:
-            from_url += '#' + url.fragment
-
-        params['from_url'] = from_url.encode('base64').strip()
-
-        if alert is not None:
-            params['alert'] = alert.encode('base64').strip()
-
-        if email is not None:
-            params['email'] = email.encode('base64').strip()
-
-        params = urlencode(params)
-        return redirect("/login?" + params)
-
-    def _get_member(self, email, password=None):
+    def _get_member(self, login, password=None):
         db = self.create_session(self.engine)
-        member = db.query(Member).filter_by(email=email).first()
+        member = db.query(Member).filter_by(login=login).first()
         if member is None:
             return self._401(u'Utilisateur inconnu')
 
@@ -73,10 +79,10 @@ class AuthPlugin(object):
             hashed = member.password.hash
             if hashed in self._cache:
                 if self._cache[hashed] != password:
-                    return self._401(u'Mauvais mot de passe', email=email)
+                    return self._401(u'Mauvais mot de passe', login=login)
             else:
                 if not sha256_crypt.verify(password, hashed):
-                    return self._401(u'Mauvais mot de passe', email=email)
+                    return self._401(u'Mauvais mot de passe', login=login)
                 self._cache[hashed] = password
 
         return member
@@ -91,29 +97,31 @@ class AuthPlugin(object):
 
             # login out
             if request.path == '/logout':
-                session['email'] = None
+                session['login'] = None
                 session.delete()
-                return redirect('/')
+                alert = 'Déconnecté'
+                alert = request.GET.get('alert', alert.encode('base64'))
+                return redirect('/?alert=%s' % alert)
 
             # login in
             if request.path == '/login' and request.method == 'POST':
-                email = request.POST['email']
+                login = request.POST['login']
                 password = request.POST['password']
-                member = self._get_member(email, password)
-                session['email'] = email
+                member = self._get_member(login, password)
+                session['login'] = login
                 session.save()
                 from_url = request.POST.get('from_url', '/')
                 return redirect(from_url)
 
             # grab the connected user
-            email = session.get('email', None)
+            login = session.get('login', None)
 
-            if not email and not self._anonymous_ok():
+            if not login and not self._anonymous_ok():
                 # not connected, and needs it
                 return self._401("Cette page necessite une connexion")
 
-            if email:
-                bottle.request.user = self._get_member(email)
+            if login:
+                bottle.request.user = self._get_member(login)
 
             return callback(*args, **kwargs)
 

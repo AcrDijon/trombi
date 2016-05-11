@@ -63,6 +63,11 @@
 
     <!-- CONTENT -->
     <div id="contentContainer" class="container">
+    % if alert:
+      <div class="alert alert-warning" role="alert">{{alert}}</div>
+    % end
+
+
     {{!base}}
 
     <hr>

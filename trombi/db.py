@@ -5,6 +5,7 @@ import os
 import hashlib
 import locale
 import re
+import unicodedata
 
 from passlib.hash import sha256_crypt
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -19,6 +20,7 @@ locale.setlocale(locale.LC_ALL, 'fr_FR.UTF-8')
 
 
 control_char_re = re.compile('[^A-Za-z0-9]', re.UNICODE)
+
 
 
 def remove_control_chars(s):
@@ -131,6 +133,7 @@ def init(sqluri='sqlite:////tmp/acr.db', fill=True):
 
         member.lastname = row[1]
         member.firstname = row[2]
+        member.set_login()
         member.address = row[3]
 
         try:
@@ -211,7 +214,8 @@ def init(sqluri='sqlite:////tmp/acr.db', fill=True):
             member.last_updated = datetime.strptime('-'.join(last_upd), '%b-%y')
         except ValueError:
             pass
-        member.is_published = member.has_paid = True    # XXX
+        member.is_published = False
+        member.has_paid = True    # XXX
         member.password = u'toto'
         return member
 

@@ -1,5 +1,13 @@
-from sqlalchemy_utils import EmailType, PasswordType
+# encoding: utf8
+import os
+import unicodedata
+import re
 
+from passlib.utils import generate_password
+from passlib.hash import sha256_crypt
+from mailer import Mailer, Message
+
+from sqlalchemy_utils import EmailType, PasswordType
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import (Column, Integer, Unicode, Enum, ForeignKey, Date,
                         Boolean, ForeignKeyConstraint, String, Float,
@@ -67,6 +75,21 @@ class Membership(Base):
     def __eq__(self, other):
         return self.label == other.label
 
+_BODY = u"""\
+Bonjour,
+
+Vous avez demandé une ré-initialization de votre mot de passe.
+
+Veuillez suivre ce lien:
+
+    http://localhost:8080/change_password?token=%s&login=%s
+
+Si vous n'avez jamais fait cette demande, vous pouvez ignorer cet email.
+
+--
+L'équipe ACR Dijon
+"""
+
 
 class Member(Base):
     __tablename__ = 'member'
@@ -79,6 +102,7 @@ class Member(Base):
     permissions = Column(Enum("User", "Admin", "Owner"))
     lastname = Column(Unicode(128))
     firstname = Column(Unicode(128))
+    login = Column(Unicode(128))
     password = Column(PasswordType(schemes=['sha256_crypt']))
     email = Column(EmailType)
     licence = Column(Unicode(128))
@@ -94,11 +118,42 @@ class Member(Base):
     has_paid = Column(Boolean)
     last_updated = Column(Date)
     bio = Column(UnicodeText)
+    token = Column(String(64))
+
+    def normalize(self, value):
+        value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
+        value = unicode(re.sub('[^\w\s-]', '', value).strip().lower())
+        return unicode(re.sub('[-\s]+', '', value))
 
     @property
     def is_super_user(self):
         return (self.permissions == u'Admin' or
                 self.permissions == u'Owner')
+
+
+    def set_login(self):
+        login = '%s%s' % (self.firstname.lower(),
+                          self.lastname.lower())
+
+        self.login = self.normalize(login)
+
+    def set_password(self, password=None):
+        if password is None:
+            password = generate_password()
+        self.password = password
+
+    def verify_password(self, password):
+        hashed = member.password.hash
+        return sha256_crypt.verify(password, hashed)
+
+    def send_reset_email(self):
+        self.token = os.urandom(32).encode('hex')
+        sender = Mailer('localhost', port=25)
+        msg = Message(From="tarek@ziade.org", To=[self.email],
+                      charset="utf-8")
+        msg.Subject = u'Accès trombinoscope ACR'
+        msg.Body = _BODY % (unicode(self.token), unicode(self.login))
+        sender.send([msg])
 
 
 Member.__table__.sqlite_autoincrement = True

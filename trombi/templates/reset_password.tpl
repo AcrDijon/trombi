@@ -10,13 +10,13 @@
       method="POST"
       action="/reset">
   <div class="form-group">
-      <label for="email" class="control-label col-sm-2">Couriel</label>
+      <label for="login" class="control-label col-sm-2">Identifiant</label>
       <div class="col-sm-10">
-        <input class="form-control" id="email" name="email"
-               value="{{email}}" type="email">
+        <input class="form-control" id="login" name="login"
+               value="{{login}}" type="login">
        <span id="helpBlock" class="help-block">
-Si vous avez perdu votre mot de passe, veuillez saisir votre e-mail
-pour le re-initialiser. Vous reçevrez un e-mail pour pour guider.
+Si vous avez perdu votre mot de passe, veuillez saisir votre identifiant
+pour le re-initialiser. Vous reçevrez un e-mail pour vous guider.
 </span>
 
       </div>

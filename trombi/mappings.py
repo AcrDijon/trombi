@@ -82,7 +82,7 @@ Vous avez demandé une ré-initialization de votre mot de passe.
 
 Veuillez suivre ce lien:
 
-    http://localhost:8080/change_password?token=%s&login=%s
+    http://trombi.acr-dijon.org/change_password?token=%s&login=%s
 
 Si vous n'avez jamais fait cette demande, vous pouvez ignorer cet email.
 

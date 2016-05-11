@@ -216,7 +216,7 @@ def init(sqluri='sqlite:////tmp/acr.db', fill=True):
             pass
         member.is_published = False
         member.has_paid = True    # XXX
-        member.password = u'toto'
+        member.set_password()   # just a random password
         return member
 
     cvs2table(session, u"adherents", _create_member)

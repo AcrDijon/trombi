@@ -11,6 +11,7 @@ from PIL import Image
 import bottle
 from bottle import static_file, redirect, request, response
 from bottle import route, app, request, post, get, auth_basic
+from sqlalchemy.orm.exc import NoResultFound
 
 from passlib.hash import sha256_crypt
 from trombi.mappings import Member, City
@@ -106,11 +107,23 @@ def member_post(id, db):
         filename = os.path.join(PICS, filename)
         photo.save(filename, overwrite=True)
 
+        # cropping
+        img = Image.open(filename)
+        x = int(request.POST.get('x', 0))
+        y = int(request.POST.get('y', 0))
+        w = int(request.POST.get('w', 0))
+        h = int(request.POST.get('h', 0))
+        img = img.crop((x, y, x + w, y + h))
+        img.save(filename)
+
         # resizing if needed
         img = Image.open(filename)
-        if img.width != 200 or img.height != 200:
+        current_w, current_h = img.size
+
+        if current_w != 200 or current_h != 200:
             img = img.resize((200, 200), PIL.Image.ANTIALIAS)
-            img.save(filename)
+
+        img.save(filename)
 
 
     post_data = request.POST.decode()
@@ -125,10 +138,15 @@ def member_post(id, db):
     form = forms.MemberForm(post_data, obj=member)
 
     if form.validate():
+        # we've validated the data
         for field in form:
             if field.name not in post_data.keys():
                 del form[field.name]
+
         form.populate_obj(member)
+
+        # let's redirect
+        return redirect('/member/%s' % str(id))
 
     return template("member_edit", form=form, member=member)
 
@@ -249,7 +267,12 @@ def post_reset(db):
     # of course, if the mail is intercepted or the server is not in HTTPS
     # that's a security breach.
     login = request.POST.get('login')
-    member = db.query(Member).filter_by(login=login).one()
+    try:
+        member = db.query(Member).filter_by(login=login).one()
+    except NoResultFound:
+        alert = 'Utilisateur Inconnu.'
+        return redirect('/?alert=%s' % alert.encode('base64'))
+
     member.send_reset_email()
     alert = 'Vous allez reçevoir un e-mail.'
     return redirect('/?alert=%s' % alert.encode('base64'))

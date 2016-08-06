@@ -17,6 +17,8 @@
     <link id="jqta-css" href="/resources/css/jquery-linedtextarea.css"
           rel="stylesheet">
     <link href="/resources/css/jquery.toastmessage.css" rel="stylesheet" />
+    <link href="/resources/css/jquery.Jcrop.css" rel="stylesheet" />
+
     <!--CSS-END-->
 
     <!--[if lt IE 9]>

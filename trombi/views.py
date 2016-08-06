@@ -72,7 +72,8 @@ def members(db):
 
     for member in lastnames:
         first = member.lastname.upper()[0]
-        if first not in letters and member.is_published:
+        if first not in letters and (member.is_published
+                or request.user.is_super_user):
             letters.append(first)
 
     letters.sort()

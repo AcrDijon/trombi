@@ -31,7 +31,6 @@ def template(name, *args, **kw):
         alert = cgi.escape(alert)
 
     kw['alert'] = alert
-
     return app.template(name, *args, **kw)
 
 

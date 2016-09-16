@@ -32,9 +32,9 @@
     <div class="grid-item">
      <div class="grid-item-content">
       <a href="/member/{{member.id}}" class="thumbnail">
-       <img src="/pics/{{member.firstname.lower()}}-{{member.lastname.lower()}}.jpg"/>
+       <img src="{{member.picture()}}"/>
       </a>
-      <span class="imagetext label label-default">{{member.firstname.capitalize()}} {{member.lastname.capitalize()}}</span>
+      <span class="imagetext label label-default">{{member.display_name()}}</span>
      </div>
     </div>
     % end

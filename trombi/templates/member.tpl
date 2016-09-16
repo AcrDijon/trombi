@@ -1,6 +1,6 @@
 
 <div class="page-header">
-  <h1>{{member.firstname.capitalize()}} {{member.lastname.capitalize()}}
+  <h1>{{member.display_name()}}
   <small>{{member.category.label}}</small>
   </h1>
 </div>
@@ -9,7 +9,7 @@
 
  <div class="col-xs-12 col-sm-3">
   <a href="#" class="thumbnail">
-    <img src="/pics/{{member.firstname.lower()}}-{{member.lastname.lower()}}.jpg"/>
+    <img src="{{member.picture()}}"/>
   </a>
  </div>
    % if member.bio:
@@ -59,4 +59,4 @@
 
 </div>
 
-% rebase('base.tpl', title='%s %s' % (member.firstname.capitalize(), member.lastname.capitalize()))
+% rebase('base.tpl', title=member.display_name())

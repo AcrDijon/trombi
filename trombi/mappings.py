@@ -120,6 +120,14 @@ class Member(Base):
     bio = Column(UnicodeText)
     token = Column(String(64))
 
+    def picture(self):
+        return "/pics/%s-%s.jpg" % (self.firstname.lower(), self.lastname.lower())
+
+    def display_name(self):
+        def _cap(data):
+            return ' '.join([item.capitalize() for item in data.split()])
+        return '%s %s' % (_cap(self.firstname), _cap(self.lastname))
+
     def normalize(self, value):
         value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
         value = unicode(re.sub('[^\w\s-]', '', value).strip().lower())

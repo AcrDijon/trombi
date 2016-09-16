@@ -1,6 +1,6 @@
 
 <div class="page-header">
-  <h1>{{member.firstname.capitalize()}} {{member.lastname.capitalize()}}</h1>
+  <h1>{{member.display_name()}}</h1>
 </div>
 
 
@@ -18,7 +18,7 @@
   <div class="form-group">
     <label for="photo" class="control-label col-sm-2">Photo</label>
     <div class="col-sm-10">
-      <img   src="/pics/{{member.firstname.lower()}}-{{member.lastname.lower()}}.jpg?q={{time.time()}}"
+      <img   src="{{member.picture()}}?q={{time.time()}}"
              id="memberPic" >
 
       <div class="photoChanger">

@@ -149,7 +149,7 @@ def make_app():
 def main():
     app = make_app()
     bottle.debug(True)
-    bottle.run(app=app, reloader=True)
+    bottle.run(app=app)   #, reloader=True)
 
 
 if __name__ == '__main__':

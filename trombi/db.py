@@ -46,22 +46,15 @@ def set_hash(session, name, value):
 
 
 def cvs2table(session, name, callback, delimiter=';'):
-    existing_hash = get_hash(session, name)
     csvfile = os.path.join(DATADIR, u'%s.csv' % name)
-
-    with open(csvfile) as f:
-        file_hash = hashlib.md5(f.read()).hexdigest()
-
-    if file_hash != existing_hash:
-        with open(csvfile, 'rb') as f:
-            reader = csv.reader(f, delimiter=delimiter)
-            for index, row in enumerate(reader):
-                obj = callback(index, row)
-                if obj is not None:
-                    session.add(obj)
+    with open(csvfile, 'rb') as f:
+        reader = csv.reader(f, delimiter=delimiter)
+        for index, row in enumerate(reader):
+            obj = callback(index, row)
+            if obj is not None:
+                session.add(obj)
 
         session.commit()
-        set_hash(session, name, file_hash)
 
 
 def init(sqluri='sqlite:////tmp/acr.db', fill=True):
@@ -74,23 +67,49 @@ def init(sqluri='sqlite:////tmp/acr.db', fill=True):
 
     session = Session()
 
+    def _find_membership(label):
+        q = session.query(mappings.Membership)
+        return q.filter(mappings.Membership.label==label).first()
+
     # Membership
     def _create_membership(index, row):
         if index == 0:
             return
+        label = unicode(row[0], 'utf8')
+        price = int(row[1])
+
+        membership = _find_membership(label)
+        if membership is not None:
+            print('Updating membership %s' % label)
+            if membership.price != price:
+                membership.price == price
+            return membership
+
+        print('Creating membership %s' % label)
         membership = mappings.Membership()
-        membership.label = unicode(row[0], 'utf8')
-        membership.price = int(row[1])
+        membership.label = label
+        membership.price = price
         return membership
 
     cvs2table(session, u"membership", _create_membership)
 
     # Categories
+    def _find_cat(code):
+        q = session.query(mappings.Category)
+        return q.filter(mappings.Category.code==code).first()
+
     def _create_cat(index, row):
         if index == 0:
             return
+        code = unicode(row[0], 'utf8')
+        cat = _find_cat(code)
+        if cat is not None:
+            print('Updating category %s' % code)
+            return cat
+
+        print('Creating category %s' % code)
         cat = mappings.Category()
-        cat.code = unicode(row[0], 'utf8')
+        cat.code = code
         cat.label = unicode(row[1], 'utf8')
         cat.min_age = int(row[2])
         cat.max_age = int(row[3])
@@ -99,20 +118,27 @@ def init(sqluri='sqlite:////tmp/acr.db', fill=True):
     cvs2table(session, u"categories", _create_cat)
 
     # Cities
-    done = []
+    cities = session.query(mappings.City).count()
+    if cities == 0:
+        print('Creating cities')
+        done = []
 
-    def _create_city(index, row):
-        if index == 0:
-            return
-        label = unicode(row[1], 'utf8')
-        zipcode = int(row[2])
-        if (label, zipcode) in done:
-            return
-        city = mappings.City(label, zipcode)
-        done.append((label, zipcode))
-        return city
+        def _create_city(index, row):
+            if index == 0:
+                return
+            label = unicode(row[1], 'utf8')
+            zipcode = int(row[2])
+            if (label, zipcode) in done:
+                return
+            city = mappings.City(label, zipcode)
+            done.append((label, zipcode))
+            return city
 
-    cvs2table(session, u"communes", _create_city, delimiter='\t')
+        cvs2table(session, u"communes", _create_city, delimiter='\t')
+
+    def find_member(email):
+        q = session.query(mappings.Member)
+        return q.filter(mappings.Member.email==email).first()
 
     # Members
     def _create_member(index, row):
@@ -123,9 +149,20 @@ def init(sqluri='sqlite:////tmp/acr.db', fill=True):
         if all(value == '' for value in row):
             return
 
-        member = mappings.Member()
+        email = row[10].replace(',', '.')
+        if email == '':
+            return None
 
-        member.email = row[10].replace(',', '.')
+        member = find_member(email)
+        if member is not None:
+            # updating
+            # XXX todo ~ update some fields
+            print('Updating %s' % email)
+            return member
+
+        print('Creating %s' % email)
+        member = mappings.Member()
+        member.email = email
         if member.email in (u'tarek@ziade.org', u'varquiel@gmail.com'):
             member.permissions = "Owner"
         else:
